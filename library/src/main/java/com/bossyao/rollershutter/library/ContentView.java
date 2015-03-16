@@ -11,7 +11,6 @@ import android.widget.RelativeLayout;
 public class ContentView extends RelativeLayout {
 
 
-
     private View _surfaceView;
 
     private View _insideView;
@@ -54,12 +53,12 @@ public class ContentView extends RelativeLayout {
 
                 View child = getChildAt(i);
 
-                if (i ==0){
-                    _surfaceView = child;
+                if (i == 0) {
+                    _insideView = child;
                 }
 
-                if (i ==1) {
-                    _insideView = child;
+                if (i == 1) {
+                    _surfaceView = child;
                 }
             }
         }

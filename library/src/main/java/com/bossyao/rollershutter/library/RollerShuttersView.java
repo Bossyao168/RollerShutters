@@ -65,7 +65,11 @@ public class RollerShuttersView extends ScrollView {
 
     private int mFrom;
 
+    private int mTo;
+
     private float mFromDragPercent;
+
+    private boolean mAnimationEndNotify;
 
 
     public RollerShuttersView(Context context) {
@@ -90,7 +94,7 @@ public class RollerShuttersView extends ScrollView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 
-        Log.e("","canParentViewScrollUp : " + canParentViewScrollUp());
+        Log.e("", "canParentViewScrollUp : " + canParentViewScrollUp());
 
         if (!isEnabled() || canParentViewScrollUp()) {
 
@@ -112,7 +116,7 @@ public class RollerShuttersView extends ScrollView {
                 Log.e("", "onInterceptTouchEvent ACTION_DOWN" + initialMotionY);
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.e("","onInterceptTouchEvent ACTION_MOVE");
+                Log.e("", "onInterceptTouchEvent ACTION_MOVE");
                 if (mActivePointerId == INVALID_POINTER) {
                     return false;
                 }
@@ -138,7 +142,7 @@ public class RollerShuttersView extends ScrollView {
                 break;
         }
 
-        Log.e("","mIsBeingDragged : " + mIsBeingDragged);
+        Log.e("", "mIsBeingDragged : " + mIsBeingDragged);
 
         return mIsBeingDragged;
     }
@@ -152,8 +156,6 @@ public class RollerShuttersView extends ScrollView {
 //            return true;
 //        }
 
-
-
         final int action = MotionEventCompat.getActionMasked(ev);
 
         switch (action) {
@@ -166,11 +168,10 @@ public class RollerShuttersView extends ScrollView {
                     return false;
                 }
 
-                if(mIsChildMoving){
-                    Log.e("","childmoving");
+                if (mIsChildMoving) {
+                    Log.e("", "childmoving");
                     return super.onTouchEvent(ev);
                 }
-
 
                 //当前所在地
                 final float y = MotionEventCompat.getY(ev, pointerIndex);
@@ -178,30 +179,30 @@ public class RollerShuttersView extends ScrollView {
                 //距离原点差值
                 final float yDiff = y - mInitialMotionY;
 
-                if(!mIsBeingDragged && !mIsChildMoving){
-                    if(Math.abs(yDiff) > mTouchSlop){
+                if (!mIsBeingDragged && !mIsChildMoving) {
+                    if (Math.abs(yDiff) > mTouchSlop) {
 
                         //一开始上滑
-                        if (yDiff < 0 ){
+                        if (yDiff < 0) {
 
                             mIsChildMoving = true;
                             return super.onTouchEvent(ev);
-                        }else {
+                        } else {
 
                             //如果是下拉到下方，就继续操作scrollview
-                            if(canParentViewScrollUp()){
+                            if (canParentViewScrollUp()) {
                                 mIsChildMoving = true;
                                 return super.onTouchEvent(ev);
 
-                            //不然就判定为在顶部，要下拉
-                            }else {
+                                //不然就判定为在顶部，要下拉
+                            } else {
                                 mIsBeingDragged = true;
 
                                 //然后不返回，继续后面代码的操作
                             }
                         }
 
-                    }else {
+                    } else {
                         return true;
                     }
 
@@ -237,7 +238,7 @@ public class RollerShuttersView extends ScrollView {
 
                 //被限制的下拉百分比 百分比不能超过1
                 float boundedDragPercent = Math.min(1f, Math.abs(mCurrentDragPercent));
-                Log.e("","boundedDragPercent : " +boundedDragPercent);
+                Log.e("", "boundedDragPercent : " + boundedDragPercent);
 
                 //与最大展示边界的相对距离
                 float extraOS = Math.abs(scrollTop) - mTotalDragDistance;
@@ -249,13 +250,13 @@ public class RollerShuttersView extends ScrollView {
                 float tensionSlingshotPercent = Math.max(0,
                         Math.min(extraOS, slingshotDist * 2) / slingshotDist);
 
-                Log.e("","tensionSlingshotPercent1 : "+tensionSlingshotPercent);
+                Log.e("", "tensionSlingshotPercent1 : " + tensionSlingshotPercent);
 
                 // x(1-x)  0<x< 1/2 所以tensionPercent增长逐渐缓慢 （0-0.5）
                 float tensionPercent = (float) ((tensionSlingshotPercent / 4) - Math.pow(
                         (tensionSlingshotPercent / 4), 2)) * 2f;
 
-                Log.e("","tensionPercent1 : "+tensionPercent);
+                Log.e("", "tensionPercent1 : " + tensionPercent);
 
                 //可以超过边界的长度，最多边界的 1/4
                 float extraMove = (slingshotDist) * tensionPercent / 2;
@@ -266,7 +267,7 @@ public class RollerShuttersView extends ScrollView {
 //                mBaseRefreshView.setPercent(mCurrentDragPercent, true);
 
                 setTargetOffsetTop(targetY - mCurrentOffsetTop, true);
-                Log.e("","mCurrentOffsetTop : "+mCurrentOffsetTop);
+                Log.e("", "mCurrentOffsetTop : " + mCurrentOffsetTop);
                 break;
             }
             case MotionEventCompat.ACTION_POINTER_DOWN:
@@ -293,9 +294,10 @@ public class RollerShuttersView extends ScrollView {
 
                 if (overScrollTop > mTotalDragDistance) {
                     mRefreshing = true;
+                    animateOffsetToSomePosition(mTotalDragDistance);
                 } else {
                     mRefreshing = false;
-                    animateOffsetToStartPosition();
+                    animateOffsetToSomePosition(0);
                 }
                 mActivePointerId = INVALID_POINTER;
                 return false;
@@ -313,12 +315,19 @@ public class RollerShuttersView extends ScrollView {
     };
 
     private void moveToStart(float interpolatedTime) {
-        int targetTop = mFrom - (int) (mFrom * interpolatedTime);
-        float targetPercent = mFromDragPercent * (1.0f - interpolatedTime);
-        int offset = targetTop - mTarget.getTop();
+        int currentTarget = mFrom + (int) ((mTo - mFrom) * interpolatedTime);
+
+        float toPercent = mTo / mTotalDragDistance;
+        float targetPercent = mFromDragPercent
+                + (toPercent - mFromDragPercent) * (interpolatedTime);
+
+        int offset = currentTarget - mTarget.getTop();
 
         mCurrentDragPercent = targetPercent;
-        //mBaseRefreshView.setPercent(mCurrentDragPercent, true);
+
+        Log.e("", "mTo : " + mTo + " mFrom : " + mFrom + " currentTarget : " + currentTarget
+                + " offset : " + offset + " mTarget.getTop() : " + mTarget.getTop());
+
         setTargetOffsetTop(offset, false);
     }
 
@@ -333,13 +342,14 @@ public class RollerShuttersView extends ScrollView {
 
         @Override
         public void onAnimationEnd(Animation animation) {
-            //mBaseRefreshView.stop();
-            mCurrentOffsetTop = mTarget.getTop();
+
         }
     };
 
-    private void animateOffsetToStartPosition() {
+    private void animateOffsetToSomePosition(int endPosition) {
+
         mFrom = mCurrentOffsetTop;
+        mTo = endPosition;
         mFromDragPercent = mCurrentDragPercent;
         long animationDuration = Math
                 .abs((long) (MAX_OFFSET_ANIMATION_DURATION * mFromDragPercent));
@@ -350,9 +360,10 @@ public class RollerShuttersView extends ScrollView {
         mAnimateToStartPosition.setAnimationListener(mToStartListener);
         mRefreshView.clearAnimation();
         mRefreshView.startAnimation(mAnimateToStartPosition);
+
     }
 
-    public void setContentView(ContentView contentView){
+    public void setContentView(ContentView contentView) {
         mContentView = contentView;
         mTarget = mContentView.getSurfaceView();
         mRefreshView = mContentView.getInsideView();
@@ -384,7 +395,7 @@ public class RollerShuttersView extends ScrollView {
     //设置两个view的上下偏移距离
     private void setTargetOffsetTop(int offset, boolean requiresUpdate) {
         mTarget.offsetTopAndBottom(offset);
-        mRefreshView.offsetTopAndBottom(offset);
+        // mRefreshView.offsetTopAndBottom(offset);
         mCurrentOffsetTop = mTarget.getTop();
         if (requiresUpdate && android.os.Build.VERSION.SDK_INT < 11) {
             invalidate();
