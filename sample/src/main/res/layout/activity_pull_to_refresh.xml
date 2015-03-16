@@ -1,0 +1,37 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <com.bossyao.rollershutter.library.RollerShuttersView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/rollerShuttersView">
+
+        <com.bossyao.rollershutter.library.ContentView
+                android:id="@+id/ContentView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <ImageView android:layout_width="match_parent"
+                       android:layout_height="100dp"
+                       android:background="@android:color/holo_blue_bright"/>
+
+            <LinearLayout
+
+                    android:background="#e0ff0000"
+                    android:id="@+id/list_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="50000dp"
+                    android:orientation="vertical">
+
+                <Button android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:text="123123"/>
+            </LinearLayout>
+
+
+        </com.bossyao.rollershutter.library.ContentView>
+    </com.bossyao.rollershutter.library.RollerShuttersView>
+
+</RelativeLayout>
