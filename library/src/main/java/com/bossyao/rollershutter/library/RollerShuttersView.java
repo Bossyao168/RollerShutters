@@ -37,13 +37,11 @@ public class RollerShuttersView extends ScrollView {
 
 //    private View mBaseRefreshView;
 
-    private View mRefreshView;
+    private View mHideView;
 
     private Interpolator mDecelerateInterpolator;
 
     private boolean mIsBeingDragged;
-
-    private boolean mRefreshing;
 
     private boolean mIsChildMoving;
 
@@ -72,8 +70,6 @@ public class RollerShuttersView extends ScrollView {
     private boolean mAnimationEndNotify;
 
     private enum State {Hide, Show}
-
-    ;
 
     private State mCurrentState = State.Hide;
 
@@ -156,12 +152,6 @@ public class RollerShuttersView extends ScrollView {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
 
-//        if (!mIsBeingDragged ) {
-////            return super.onTouchEvent(ev);
-//
-//            return true;
-//        }
-
         final int action = MotionEventCompat.getActionMasked(ev);
 
         switch (action) {
@@ -213,25 +203,6 @@ public class RollerShuttersView extends ScrollView {
                     }
 
                 }
-
-//                if (yDiff > mTouchSlop && !mIsBeingDragged) {
-//                    mIsBeingDragged = true;
-//                }else {
-//
-//                    mIsBeingDragged = false;
-//
-//                    //如果是向下滑动的话
-//                    if (yDiff < 0 ){
-//                        mIsChildMoving = true;
-//
-//                        return super.onTouchEvent(ev);
-//                    }else {
-//
-//                        return true;
-//                    }
-//
-//
-//                }
 
                 //真正移动的值，这里为0.5即一半
                 float scrollTop = yDiff * DRAG_RATE;
@@ -312,11 +283,9 @@ public class RollerShuttersView extends ScrollView {
 
                 //hide的时候，拉取超过了view
                 if (overScrollTop > mTotalDragDistance && State.Hide == mCurrentState) {
-                    mRefreshing = true;
                     mCurrentState = State.Show;
                     animateOffsetToSomePosition(mTotalDragDistance);
                 } else {//拉取没超过
-                    mRefreshing = false;
                     mCurrentState = State.Hide;
                     animateOffsetToSomePosition(0);
                 }
@@ -383,15 +352,15 @@ public class RollerShuttersView extends ScrollView {
         mAnimateToStartPosition.setDuration(animationDuration);
         mAnimateToStartPosition.setInterpolator(mDecelerateInterpolator);
         mAnimateToStartPosition.setAnimationListener(mToStartListener);
-        mRefreshView.clearAnimation();
-        mRefreshView.startAnimation(mAnimateToStartPosition);
+        mHideView.clearAnimation();
+        mHideView.startAnimation(mAnimateToStartPosition);
 
     }
 
     public void setContentView(ContentView contentView) {
         mContentView = contentView;
         mTarget = mContentView.getSurfaceView();
-        mRefreshView = mContentView.getInsideView();
+        mHideView = mContentView.getInsideView();
 
     }
 
@@ -422,7 +391,7 @@ public class RollerShuttersView extends ScrollView {
         mTarget.offsetTopAndBottom(offset);
         Log.e("", "mTarget.offsetTopAndBottom : " + offset);
 
-        // mRefreshView.offsetTopAndBottom(offset);
+        // mHideView.offsetTopAndBottom(offset);
         mCurrentOffsetTop = mTarget.getTop();
         if (requiresUpdate && android.os.Build.VERSION.SDK_INT < 11) {
             invalidate();

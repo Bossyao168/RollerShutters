@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="RefreshView">
+    <declare-styleable name="RollerView">
         <attr name="type" format="enum">
-            <enum name="sun" value="0"/>
-            <enum name="jet" value="1"/>
+            <enum name="r1" value="0"/>
+            <enum name="r2" value="1"/>
         </attr>
     </declare-styleable>
 </resources>
