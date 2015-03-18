@@ -10,7 +10,9 @@ public final class Logger {
      * Set true or false if you want read logs or not
      */
     private static boolean logEnabled_v = true;
+
     private static boolean logEnabled_i = true;
+
     private static boolean logEnabled_e = true;
 
     public static void d() {

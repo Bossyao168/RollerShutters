@@ -25,46 +25,65 @@ import com.bossyao.rollershutter.library.R;
 public class SunRefreshView extends BaseRefreshView implements Animatable {
 
     private static final float SCALE_START_PERCENT = 0.5f;
+
     private static final int ANIMATION_DURATION = 1000;
 
     private final static float SKY_RATIO = 0.65f;
+
     private static final float SKY_INITIAL_SCALE = 1.05f;
 
     private final static float TOWN_RATIO = 0.22f;
+
     private static final float TOWN_INITIAL_SCALE = 1.20f;
+
     private static final float TOWN_FINAL_SCALE = 1.30f;
 
     private static final float SUN_FINAL_SCALE = 0.75f;
+
     private static final float SUN_INITIAL_ROTATE_GROWTH = 1.2f;
+
     private static final float SUN_FINAL_ROTATE_GROWTH = 1.5f;
 
     private static final Interpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
 
     private PullToRefreshView mParent;
+
     private Matrix mMatrix;
+
     private Animation mAnimation;
 
     private int mTop;
+
     private int mScreenWidth;
 
     private int mSkyHeight;
+
     private float mSkyTopOffset;
+
     private float mSkyMoveOffset;
 
     private int mTownHeight;
+
     private float mTownInitialTopOffset;
+
     private float mTownFinalTopOffset;
+
     private float mTownMoveOffset;
 
     private int mSunSize = 100;
+
     private float mSunLeftOffset;
+
     private float mSunTopOffset;
 
     private float mPercent = 0.0f;
+
     private float mRotate = 0.0f;
 
     private Bitmap mSky;
+
     private Bitmap mSun;
+
     private Bitmap mTown;
 
     private boolean isRefreshing = false;
@@ -100,7 +119,8 @@ public class SunRefreshView extends BaseRefreshView implements Animatable {
         mSky = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.sky);
         mSky = Bitmap.createScaledBitmap(mSky, mScreenWidth, mSkyHeight, true);
         mTown = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.buildings);
-        mTown = Bitmap.createScaledBitmap(mTown, mScreenWidth, (int) (mScreenWidth * TOWN_RATIO), true);
+        mTown = Bitmap
+                .createScaledBitmap(mTown, mScreenWidth, (int) (mScreenWidth * TOWN_RATIO), true);
         mSun = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.sun);
         mSun = Bitmap.createScaledBitmap(mSun, mSunSize, mSunSize, true);
     }
@@ -108,7 +128,9 @@ public class SunRefreshView extends BaseRefreshView implements Animatable {
     @Override
     public void setPercent(float percent, boolean invalidate) {
         setPercent(percent);
-        if (invalidate) setRotate(percent);
+        if (invalidate) {
+            setRotate(percent);
+        }
     }
 
     @Override
@@ -116,7 +138,6 @@ public class SunRefreshView extends BaseRefreshView implements Animatable {
         mTop += offset;
         invalidateSelf();
     }
-
 
 
     @Override
@@ -149,14 +170,13 @@ public class SunRefreshView extends BaseRefreshView implements Animatable {
             skyScale = SKY_INITIAL_SCALE;
         }
 
-
-
         float offsetX = -(mScreenWidth * skyScale - mScreenWidth) / 2.0f;
-        float offsetY = (1.0f - dragPercent) * mParent.getTotalDragDistance() - mSkyTopOffset // Offset canvas moving
+        float offsetY = (1.0f - dragPercent) * mParent.getTotalDragDistance() - mSkyTopOffset
+                // Offset canvas moving
                 - mSkyHeight * (skyScale - 1.0f) / 2 // Offset sky scaling
                 + mSkyMoveOffset * dragPercent; // Give it a little move top -> bottom
 
-        Log.e("","skyScale : " + skyScale + " offsetX : " + offsetX + " offsetY: " + offsetY);
+        Log.e("", "skyScale : " + skyScale + " offsetX : " + offsetX + " offsetY: " + offsetY);
 
         matrix.postScale(skyScale, skyScale);
         matrix.postTranslate(0, offsetY);
@@ -180,7 +200,8 @@ public class SunRefreshView extends BaseRefreshView implements Animatable {
              */
             float scalePercent = scalePercentDelta / (1.0f - SCALE_START_PERCENT);
             townScale = TOWN_INITIAL_SCALE + (TOWN_FINAL_SCALE - TOWN_INITIAL_SCALE) * scalePercent;
-            townTopOffset = mTownInitialTopOffset - (mTownFinalTopOffset - mTownInitialTopOffset) * scalePercent;
+            townTopOffset = mTownInitialTopOffset
+                    - (mTownFinalTopOffset - mTownInitialTopOffset) * scalePercent;
             townMoveOffset = mTownMoveOffset * (1.0f - scalePercent);
         } else {
             float scalePercent = dragPercent / SCALE_START_PERCENT;
@@ -190,10 +211,11 @@ public class SunRefreshView extends BaseRefreshView implements Animatable {
         }
 
         float offsetX = -(mScreenWidth * townScale - mScreenWidth) / 2.0f;
-        float offsetY = (1.0f - dragPercent) * mParent.getTotalDragDistance() // Offset canvas moving
-                + townTopOffset
-                - mTownHeight * (townScale - 1.0f) / 2 // Offset town scaling
-                + townMoveOffset; // Give it a little move
+        float offsetY =
+                (1.0f - dragPercent) * mParent.getTotalDragDistance() // Offset canvas moving
+                        + townTopOffset
+                        - mTownHeight * (townScale - 1.0f) / 2 // Offset town scaling
+                        + townMoveOffset; // Give it a little move
 
         matrix.postScale(townScale, townScale);
         matrix.postTranslate(offsetX, offsetY);
@@ -224,7 +246,8 @@ public class SunRefreshView extends BaseRefreshView implements Animatable {
             float sunScale = 1.0f - (1.0f - SUN_FINAL_SCALE) * scalePercent;
             sunRotateGrowth += (SUN_FINAL_ROTATE_GROWTH - SUN_INITIAL_ROTATE_GROWTH) * scalePercent;
 
-            matrix.preTranslate(offsetX + (sunRadius - sunRadius * sunScale), offsetY * (2.0f - sunScale));
+            matrix.preTranslate(offsetX + (sunRadius - sunRadius * sunScale),
+                    offsetY * (2.0f - sunScale));
             matrix.preScale(sunScale, sunScale);
 
             offsetX += sunRadius;

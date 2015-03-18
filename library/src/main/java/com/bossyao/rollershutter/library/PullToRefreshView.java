@@ -109,6 +109,7 @@ public class PullToRefreshView extends RelativeLayout {
 
     /**
      * 填充上方view
+     *
      * @param type view类型
      */
     public void setRefreshStyle(int type) {
@@ -132,8 +133,6 @@ public class PullToRefreshView extends RelativeLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-
-
 
         ensureTarget();
         if (mTarget == null) {
@@ -175,10 +174,9 @@ public class PullToRefreshView extends RelativeLayout {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
 
         if (!isEnabled() || canChildScrollUp() || mRefreshing) {
-            Log.e("","axiba1: "+ !isEnabled());
-            Log.e("","axiba2: "+ canChildScrollUp());
-            Log.e("","axiba3: "+ mRefreshing);
-
+            Log.e("", "axiba1: " + !isEnabled());
+            Log.e("", "axiba2: " + canChildScrollUp());
+            Log.e("", "axiba3: " + mRefreshing);
 
             return false;
         }
@@ -195,7 +193,7 @@ public class PullToRefreshView extends RelativeLayout {
                     return false;
                 }
                 mInitialMotionY = initialMotionY;
-                Log.e("","onInterceptTouchEvent ACTION_DOWN" + initialMotionY);
+                Log.e("", "onInterceptTouchEvent ACTION_DOWN" + initialMotionY);
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mActivePointerId == INVALID_POINTER) {
@@ -209,17 +207,17 @@ public class PullToRefreshView extends RelativeLayout {
                 if (yDiff > mTouchSlop && !mIsBeingDragged) {
                     mIsBeingDragged = true;
                 }
-                Log.e("","onInterceptTouchEvent ACTION_MOVE" + y);
+                Log.e("", "onInterceptTouchEvent ACTION_MOVE" + y);
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 mIsBeingDragged = false;
                 mActivePointerId = INVALID_POINTER;
-                Log.e("","onInterceptTouchEvent ACTION_UP or ACTION_CANCEL");
+                Log.e("", "onInterceptTouchEvent ACTION_UP or ACTION_CANCEL");
                 break;
             case MotionEventCompat.ACTION_POINTER_UP:
                 onSecondaryPointerUp(ev);
-                Log.e("","onInterceptTouchEvent ACTION_POINTER_UP ");
+                Log.e("", "onInterceptTouchEvent ACTION_POINTER_UP ");
                 break;
         }
 
@@ -259,7 +257,7 @@ public class PullToRefreshView extends RelativeLayout {
 
                 //被限制的下拉百分比 百分比不能超过1
                 float boundedDragPercent = Math.min(1f, Math.abs(mCurrentDragPercent));
-                Log.e("","boundedDragPercent : " +boundedDragPercent);
+                Log.e("", "boundedDragPercent : " + boundedDragPercent);
 
                 //与最大展示边界的相对距离
                 float extraOS = Math.abs(scrollTop) - mTotalDragDistance;
@@ -271,13 +269,13 @@ public class PullToRefreshView extends RelativeLayout {
                 float tensionSlingshotPercent = Math.max(0,
                         Math.min(extraOS, slingshotDist * 2) / slingshotDist);
 
-                Log.e("","tensionSlingshotPercent1 : "+tensionSlingshotPercent);
+                Log.e("", "tensionSlingshotPercent1 : " + tensionSlingshotPercent);
 
                 // x(1-x)  0<x< 1/2 所以tensionPercent增长逐渐缓慢 （0-0.5）
                 float tensionPercent = (float) ((tensionSlingshotPercent / 4) - Math.pow(
                         (tensionSlingshotPercent / 4), 2)) * 2f;
 
-                Log.e("","tensionPercent1 : "+tensionPercent);
+                Log.e("", "tensionPercent1 : " + tensionPercent);
 
                 //可以超过边界的长度，最多边界的 1/4
                 float extraMove = (slingshotDist) * tensionPercent / 2;
@@ -287,7 +285,7 @@ public class PullToRefreshView extends RelativeLayout {
 
                 mBaseRefreshView.setPercent(mCurrentDragPercent, true);
                 setTargetOffsetTop(targetY - mCurrentOffsetTop, true);
-                Log.e("","mCurrentOffsetTop : "+mCurrentOffsetTop);
+                Log.e("", "mCurrentOffsetTop : " + mCurrentOffsetTop);
                 break;
             }
             case MotionEventCompat.ACTION_POINTER_DOWN:

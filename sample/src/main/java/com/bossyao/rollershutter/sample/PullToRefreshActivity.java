@@ -51,7 +51,7 @@ public class PullToRefreshActivity extends ActionBarActivity {
         //ListView listView = (ListView) findViewById(R.id.list_view);
         //listView.setAdapter(new SampleAdapter(this, R.layout.list_item, sampleList));
 
-        RollerShuttersView scrollView = (RollerShuttersView)findViewById(R.id.rollerShuttersView);
+        RollerShuttersView scrollView = (RollerShuttersView) findViewById(R.id.rollerShuttersView);
 
         mContentView = (ContentView) findViewById(R.id.ContentView);
         scrollView.setContentView(mContentView);
@@ -71,12 +71,15 @@ public class PullToRefreshActivity extends ActionBarActivity {
     class SampleAdapter extends ArrayAdapter<Map<String, Integer>> {
 
         public static final String KEY_ICON = "icon";
+
         public static final String KEY_COLOR = "color";
 
         private final LayoutInflater mInflater;
+
         private final List<Map<String, Integer>> mData;
 
-        public SampleAdapter(Context context, int layoutResourceId, List<Map<String, Integer>> data) {
+        public SampleAdapter(Context context, int layoutResourceId,
+                List<Map<String, Integer>> data) {
             super(context, layoutResourceId, data);
             mData = data;
             mInflater = LayoutInflater.from(context);
@@ -88,7 +91,8 @@ public class PullToRefreshActivity extends ActionBarActivity {
             if (convertView == null) {
                 viewHolder = new ViewHolder();
                 convertView = mInflater.inflate(R.layout.list_item, parent, false);
-                viewHolder.imageViewIcon = (ImageView) convertView.findViewById(R.id.image_view_icon);
+                viewHolder.imageViewIcon = (ImageView) convertView
+                        .findViewById(R.id.image_view_icon);
                 convertView.setTag(viewHolder);
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
@@ -101,6 +105,7 @@ public class PullToRefreshActivity extends ActionBarActivity {
         }
 
         class ViewHolder {
+
             ImageView imageViewIcon;
         }
 

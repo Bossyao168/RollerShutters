@@ -19,11 +19,11 @@ public abstract class BaseRefreshView extends Drawable implements Drawable.Callb
         mRefreshLayout = layout;
     }
 
-    public Context getContext(){
+    public Context getContext() {
         return mRefreshLayout != null ? mRefreshLayout.getContext() : null;
     }
 
-    public PullToRefreshView getRefreshLayout(){
+    public PullToRefreshView getRefreshLayout() {
         return mRefreshLayout;
     }
 

@@ -25,9 +25,6 @@
                     android:layout_height="50000dp"
                     android:orientation="vertical">
 
-                <Button android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:text="123123"/>
             </LinearLayout>
 
 

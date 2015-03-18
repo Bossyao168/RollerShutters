@@ -28,7 +28,7 @@ public class RollerShuttersView extends ScrollView {
 
     private static final float DRAG_RATE = .5f;
 
-    public static final int MAX_OFFSET_ANIMATION_DURATION = 700;
+    public static final int MAX_OFFSET_ANIMATION_DURATION = 500;
 
     private ContentView mContentView;
 
@@ -70,6 +70,12 @@ public class RollerShuttersView extends ScrollView {
     private float mFromDragPercent;
 
     private boolean mAnimationEndNotify;
+
+    private enum State {Hide, Show}
+
+    ;
+
+    private State mCurrentState = State.Hide;
 
 
     public RollerShuttersView(Context context) {
@@ -228,7 +234,12 @@ public class RollerShuttersView extends ScrollView {
 //                }
 
                 //真正移动的值，这里为0.5即一半
-                final float scrollTop = yDiff * DRAG_RATE;
+                float scrollTop = yDiff * DRAG_RATE;
+
+                //如果是view出现了之后，那么滑动值需要加上边界值
+                if (State.Show == mCurrentState) {
+                    scrollTop += mTotalDragDistance;
+                }
 
                 // 下拉程度百分比
                 mCurrentDragPercent = scrollTop / mTotalDragDistance;
@@ -288,18 +299,31 @@ public class RollerShuttersView extends ScrollView {
                 final float y = MotionEventCompat.getY(ev, pointerIndex);
 
                 //判定状态值
-                final float overScrollTop = (y - mInitialMotionY) * DRAG_RATE;
-                mIsBeingDragged = false;
-                mIsChildMoving = false;
+                float overScrollTop = (y - mInitialMotionY) * DRAG_RATE;
+                if (State.Show == mCurrentState) {
+                    overScrollTop += mTotalDragDistance;
 
-                if (overScrollTop > mTotalDragDistance) {
+                    if (mIsChildMoving) {
+                        mIsBeingDragged = false;
+                        mIsChildMoving = false;
+                        return false;
+                    }
+                }
+
+                //hide的时候，拉取超过了view
+                if (overScrollTop > mTotalDragDistance && State.Hide == mCurrentState) {
                     mRefreshing = true;
+                    mCurrentState = State.Show;
                     animateOffsetToSomePosition(mTotalDragDistance);
-                } else {
+                } else {//拉取没超过
                     mRefreshing = false;
+                    mCurrentState = State.Hide;
                     animateOffsetToSomePosition(0);
                 }
                 mActivePointerId = INVALID_POINTER;
+
+                mIsBeingDragged = false;
+                mIsChildMoving = false;
                 return false;
             }
         }
@@ -352,7 +376,8 @@ public class RollerShuttersView extends ScrollView {
         mTo = endPosition;
         mFromDragPercent = mCurrentDragPercent;
         long animationDuration = Math
-                .abs((long) (MAX_OFFSET_ANIMATION_DURATION * mFromDragPercent));
+                .abs((long) (Math.min(MAX_OFFSET_ANIMATION_DURATION,
+                        MAX_OFFSET_ANIMATION_DURATION * mFromDragPercent)));
 
         mAnimateToStartPosition.reset();
         mAnimateToStartPosition.setDuration(animationDuration);
@@ -395,6 +420,8 @@ public class RollerShuttersView extends ScrollView {
     //设置两个view的上下偏移距离
     private void setTargetOffsetTop(int offset, boolean requiresUpdate) {
         mTarget.offsetTopAndBottom(offset);
+        Log.e("", "mTarget.offsetTopAndBottom : " + offset);
+
         // mRefreshView.offsetTopAndBottom(offset);
         mCurrentOffsetTop = mTarget.getTop();
         if (requiresUpdate && android.os.Build.VERSION.SDK_INT < 11) {
