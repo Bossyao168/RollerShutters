@@ -14,13 +14,12 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.Transformation;
 import android.widget.ScrollView;
-
 /**
  * Created by BossYao on 15/3/13.
  */
 public class RollerShuttersView extends ScrollView {
 
-    private static final int DRAG_MAX_DISTANCE = 120;
+    private static final int DRAG_MAX_DISTANCE = 80;
 
     private static final int INVALID_POINTER = -1;
 
@@ -38,6 +37,10 @@ public class RollerShuttersView extends ScrollView {
 //    private View mBaseRefreshView;
 
     private View mHideView;
+
+    private MotionEvent mCurrentMotionDownEvent;
+
+    private boolean mHasMadeDown;
 
     private Interpolator mDecelerateInterpolator;
 
@@ -98,15 +101,19 @@ public class RollerShuttersView extends ScrollView {
 
         Log.e("", "canParentViewScrollUp : " + canParentViewScrollUp());
 
-        if (!isEnabled() || canParentViewScrollUp()) {
-
-            return false;
-        }
+//        if (!isEnabled() || canParentViewScrollUp()) {
+//
+//            return false;
+//        }
 
         final int action = MotionEventCompat.getActionMasked(ev);
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+
+                mCurrentMotionDownEvent = MotionEvent.obtain(ev);
+                mHasMadeDown = true;
+
                 setTargetOffsetTop(0, true);
                 mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
                 mIsBeingDragged = false;
@@ -127,8 +134,28 @@ public class RollerShuttersView extends ScrollView {
                     return false;
                 }
                 final float yDiff = y - mInitialMotionY;
-                if (yDiff > mTouchSlop && !mIsBeingDragged) {
-                    mIsBeingDragged = true;
+
+                //如果滑动过大，就将事件给父view
+                if (Math.abs(yDiff) > mTouchSlop && !mIsBeingDragged && !mIsChildMoving) {
+
+                    //可以滑动
+                    if (canParentViewScrollUp()){
+                        mIsBeingDragged = false;
+                        mIsChildMoving = true;
+                    }else {
+                        if(yDiff >0){
+                            mIsBeingDragged = true;
+                            mIsChildMoving = false;
+                        }else {
+                            mIsBeingDragged = false;
+                            mIsChildMoving = true;
+                        }
+                    }
+
+                    Log.e("","阿西吧！！！！");
+
+                    return true;
+
                 }
                 Log.e("", "onInterceptTouchEvent ACTION_MOVE" + y);
                 break;
@@ -152,10 +179,15 @@ public class RollerShuttersView extends ScrollView {
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
 
+        Log.e("","好的阿西吧");
         final int action = MotionEventCompat.getActionMasked(ev);
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+
+                mCurrentMotionDownEvent = MotionEvent.obtain(ev);
+                mHasMadeDown = true;
+
                 mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
                 return super.onTouchEvent(ev);
             case MotionEvent.ACTION_MOVE: {
@@ -165,6 +197,12 @@ public class RollerShuttersView extends ScrollView {
                 }
 
                 if (mIsChildMoving) {
+
+                    if(mHasMadeDown) {
+                        onTouchEvent(mCurrentMotionDownEvent);
+                        mHasMadeDown = false;
+                    }
+
                     Log.e("", "childmoving");
                     return super.onTouchEvent(ev);
                 }
@@ -282,7 +320,7 @@ public class RollerShuttersView extends ScrollView {
                 }
 
                 //hide的时候，拉取超过了view
-                if (overScrollTop > mTotalDragDistance && State.Hide == mCurrentState) {
+                if (overScrollTop > mTotalDragDistance && State.Hide == mCurrentState && !mIsChildMoving) {
                     mCurrentState = State.Show;
                     animateOffsetToSomePosition(mTotalDragDistance);
                 } else {//拉取没超过
@@ -298,6 +336,22 @@ public class RollerShuttersView extends ScrollView {
         }
 
         return true;
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        super.onLayout(changed, l, t, r, b);
+
+        int height = getMeasuredHeight();
+        int width = getMeasuredWidth();
+        int left = getPaddingLeft();
+        int top = getPaddingTop();
+        int right = getPaddingRight();
+        int bottom = getPaddingBottom();
+
+        mTarget.layout(left, top + mCurrentOffsetTop, left + width - right,
+                top + height - bottom + mCurrentOffsetTop);
+        mHideView.layout(left, top, left + width - right, top + height - bottom);
     }
 
     private final Animation mAnimateToStartPosition = new Animation() {
@@ -356,6 +410,8 @@ public class RollerShuttersView extends ScrollView {
         mHideView.startAnimation(mAnimateToStartPosition);
 
     }
+
+
 
     public void setContentView(ContentView contentView) {
         mContentView = contentView;
